@@ -61,4 +61,5 @@ def deletar_paciente(paciente_id):
     return '', 204
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) #teste
+    
