@@ -7,7 +7,7 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecsTaskExecutionRole-unique"
+  name = "ecsTaskExecutionRole-unique-new" # Nome atualizado
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -35,7 +35,7 @@ resource "aws_lb" "flask_lb" {
 }
 
 resource "aws_lb_target_group" "flask_tg" {
-  name = "flask-tg-unique"
+  name = "flask-tg-unique-new" # Nome atualizado
   port     = 5000
   protocol = "HTTP"
   vpc_id   = var.vpc_id
