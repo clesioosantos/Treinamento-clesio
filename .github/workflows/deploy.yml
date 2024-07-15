@@ -44,7 +44,9 @@ jobs:
         working-directory: terraform
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var "subnets=[\"${{ secrets.SUBNETS }}\"]"
+        run: |
+            terraform apply -auto-approve -var "subnets=[\"${{ secrets.SUBNETS }}\"]"
+            
         working-directory: terraform
         env:
           TF_VAR_docker_image: ${{ secrets.DOCKER_USERNAME }}/meu-flask-app:latest

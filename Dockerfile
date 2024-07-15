@@ -1,20 +1,23 @@
-# Usar a imagem base do Python
+# Usar uma imagem base do Python
 FROM python:3.8-slim
 
-# Definir o diretório de trabalho
+# Definir o diretório de trabalho no container
 WORKDIR /app
 
-# Copiar os arquivos de requisitos
-COPY requirements.txt .
+# Copiar o arquivo requirements.txt para o container
+COPY requirements.txt requirements.txt
 
 # Instalar as dependências
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
-# Copiar o código da aplicação
+# Copiar o restante dos arquivos da aplicação para o container
 COPY . .
 
-# Expor a porta 5000
+# Definir a variável de ambiente para evitar buffer de saída
+ENV PYTHONUNBUFFERED=1
+
+# Expor a porta em que o Flask será executado
 EXPOSE 5000
 
-# Comando para iniciar a aplicação Flask
+# Comando para executar o aplicativo Flask
 CMD ["python", "app.py"]
