@@ -4,7 +4,7 @@ variable "docker_image" {
 }
 
 variable "subnets" {
-  description = "Subnets for ECS tasks"
+  description = "List of subnet IDs"
   type        = list(string)
 }
 
