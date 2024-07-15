@@ -45,10 +45,8 @@ jobs:
 
       - name: Terraform Apply
         run: |
-            terraform apply -auto-approve -var "subnets=[\"${{ secrets.SUBNETS }}\"]"
-            
+            terraform apply -auto-approve -var "subnets=[${{ secrets.SUBNETS }}]"
         working-directory: terraform
         env:
           TF_VAR_docker_image: ${{ secrets.DOCKER_USERNAME }}/meu-flask-app:latest
-          TF_VAR_subnets: ${{ secrets.SUBNETS }}
           TF_VAR_vpc_id: ${{ secrets.VPC_ID }}
