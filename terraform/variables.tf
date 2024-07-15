@@ -1,14 +1,14 @@
 variable "docker_image" {
-  description = "Docker image for Flask app"
+  description = "The Docker image for the Flask app"
   type        = string
 }
 
 variable "subnets" {
-  description = "List of subnet IDs"
+  description = "The subnets for the ECS service"
   type        = list(string)
 }
 
 variable "vpc_id" {
-  description = "VPC ID for ECS tasks"
+  description = "The VPC ID for the ECS service"
   type        = string
 }

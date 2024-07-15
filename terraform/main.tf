@@ -46,7 +46,7 @@ resource "aws_ecs_service" "flask_service" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecsTaskExecutionRole"
+  name = "ecsTaskExecutionRole-unique"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -104,7 +104,7 @@ resource "aws_lb_listener" "flask_listener" {
 }
 
 resource "aws_lb_target_group" "flask_tg" {
-  name     = "flask-tg"
+  name = "flask-tg-unique"
   port     = 5000
   protocol = "HTTP"
   vpc_id   = var.vpc_id
