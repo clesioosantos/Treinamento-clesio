@@ -6,45 +6,6 @@ resource "aws_ecs_cluster" "ecs_cluster" {
   name = "flask-app-cluster"
 }
 
-resource "aws_ecs_task_definition" "flask_task" {
-  family                   = "flask-task"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-
-  container_definitions = jsonencode([{
-    name      = "flask-container"
-    image     = "${var.docker_image}"
-    essential = true
-
-    portMappings = [{
-      containerPort = 5000
-      hostPort      = 5000
-    }]
-  }])
-}
-
-resource "aws_ecs_service" "flask_service" {
-  name            = "flask-service"
-  cluster         = aws_ecs_cluster.ecs_cluster.id
-  task_definition = aws_ecs_task_definition.flask_task.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets         = var.subnets
-    security_groups = [aws_security_group.flask_sg.id]
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.flask_tg.arn
-    container_name   = "flask-container"
-    container_port   = 5000
-  }
-}
-
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "ecsTaskExecutionRole-unique"
 
@@ -65,6 +26,42 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   ]
 }
 
+resource "aws_lb" "flask_lb" {
+  name               = "flask-lb-unique"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.flask_sg.id]
+  subnets            = var.subnets
+}
+
+resource "aws_lb_target_group" "flask_tg" {
+  name = "flask-tg-unique"
+  port     = 5000
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+  target_type = "ip"
+  
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+}
+
+resource "aws_lb_listener" "flask_listener" {
+  load_balancer_arn = aws_lb.flask_lb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.flask_tg.arn
+  }
+}
+
 resource "aws_security_group" "flask_sg" {
   name_prefix = "flask-sg"
 
@@ -83,39 +80,57 @@ resource "aws_security_group" "flask_sg" {
   }
 }
 
-resource "aws_lb" "flask_lb" {
-  name               = "flask-lb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.flask_sg.id]
-  subnets            = var.subnets
+resource "aws_ecs_task_definition" "flask_task" {
+  family                   = "flask-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+
+  container_definitions = jsonencode([{
+    name      = "flask-container"
+    image     = var.docker_image
+    essential = true
+
+    portMappings = [{
+      containerPort = 5000
+      hostPort      = 5000
+    }]
+  }])
 }
 
-resource "aws_lb_listener" "flask_listener" {
-  load_balancer_arn = aws_lb.flask_lb.arn
-  port              = "80"
-  protocol          = "HTTP"
+resource "aws_ecs_service" "flask_service" {
+  name            = "flask-service"
+  cluster         = aws_ecs_cluster.ecs_cluster.id
+  task_definition = aws_ecs_task_definition.flask_task.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  depends_on      = [aws_lb_listener.flask_listener]
 
-  default_action {
-    type = "forward"
+  network_configuration {
+    subnets         = var.subnets
+    security_groups = [aws_security_group.flask_sg.id]
+  }
 
+  load_balancer {
     target_group_arn = aws_lb_target_group.flask_tg.arn
+    container_name   = "flask-container"
+    container_port   = 5000
   }
 }
 
-resource "aws_lb_target_group" "flask_tg" {
-  name = "flask-tg-unique"
-  port     = 5000
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
-  target_type = "ip"
-  
-  health_check {
-    path                = "/"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 5
-    unhealthy_threshold = 2
-    matcher             = "200"
-  }
+variable "docker_image" {
+  description = "The Docker image for the Flask app"
+  type        = string
+}
+
+variable "subnets" {
+  description = "The subnets for the ECS service"
+  type        = list(string)
+}
+
+variable "vpc_id" {
+  description = "The VPC ID for the ECS service"
+  type        = string
 }
