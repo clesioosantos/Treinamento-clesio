@@ -7,7 +7,7 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecsTaskExecutionRole-unique-neww" # Nome atualizado
+  name = "ecsTaskExecutionRole-unique-new-tr" # Nome atualizado
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -27,7 +27,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 }
 
 resource "aws_lb" "flask_lb" {
-  name               = "flask-lb-unique_new"
+  name               = "flask-lb-unique-new-tr"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.flask_sg.id]
